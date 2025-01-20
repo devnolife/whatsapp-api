@@ -23,7 +23,15 @@ const checkRegisteredNumber = async (number) => {
   return isRegistered;
 }
 
+const ensureAbsoluteUrl = (url) => {
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'http://' + url;
+  }
+  return url;
+};
+
 const convertUrlToBase64 = async (url) => {
+  url = ensureAbsoluteUrl(url);
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString('base64');
