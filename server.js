@@ -3,8 +3,8 @@ const express = require('express');
 const server = express();
 const port = 5000;
 const bodyParser = require('body-parser');
-const cors = require('cors')
-const fetch = require('node-fetch');
+const cors = require('cors');
+const axios = require('axios'); // Changed from node-fetch to axios
 
 const phoneNumberFormatter = function (number) {
   let formatted = number.replace(/\D/g, '');
@@ -31,11 +31,15 @@ const ensureAbsoluteUrl = (url) => {
 };
 
 const convertUrlToBase64 = async (url) => {
-  url = ensureAbsoluteUrl(url);
-  const response = await fetch(url);
-  const arrayBuffer = await response.arrayBuffer();
-  const base64 = Buffer.from(arrayBuffer).toString('base64');
-  return base64;
+  try {
+    url = ensureAbsoluteUrl(url);
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const base64 = Buffer.from(response.data).toString('base64');
+    return base64;
+  } catch (error) {
+    console.error('Error converting URL to base64:', error);
+    throw new Error('Failed to convert URL to base64');
+  }
 };
 
 server.use(bodyParser.json());
