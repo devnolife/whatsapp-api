@@ -3,7 +3,7 @@ const express = require('express');
 const server = express();
 const port = 5000;
 const bodyParser = require('body-parser');
-
+const cors = require('cors')
 
 const phoneNumberFormatter = function (number) {
   let formatted = number.replace(/\D/g, '');
@@ -66,6 +66,7 @@ client.on('disconnected', (reason) => {
 });
 
 
+server.use(cors('*'))
 
 server.get('/whatsapp', (req, res) => {
   res.status(200).send("WhatsApp Chatbot Server by devnolife")
