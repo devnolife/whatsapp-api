@@ -3,6 +3,7 @@ const express = require('express');
 const server = express();
 const port = 5000;
 const bodyParser = require('body-parser');
+const { MessageMedia } = require('whatsapp-web.js');
 
 
 const phoneNumberFormatter = function (number) {
@@ -122,6 +123,36 @@ server.post('/whatsapp/send-message', async (req, res) => {
     })
 })
 
+server.post('/whatsapp/send-media', async (req, res) => {
+  try {
+    const { number, caption, base64 } = req.body;
+    const noHP = phoneNumberFormatter(number);
+    const isRegisteredNumber = await checkRegisteredNumber(noHP);
+
+    if (!isRegisteredNumber) {
+      return res.status(422).json({
+        data: false,
+        message: 'Nomor Whatsapp tidak terdaftar',
+        code: 422
+      });
+    }
+
+    const media = new MessageMedia('image/png', base64);
+    await client.sendMessage(noHP, media, { caption });
+
+    res.status(200).json({
+      data: null,
+      code: 200,
+      message: "Media Berhasil Dikirim"
+    });
+  } catch (err) {
+    res.status(500).json({
+      data: null,
+      code: 500,
+      message: "Media Gagal Dikirim"
+    });
+  }
+});
 
 
 server.listen(port, () => {
