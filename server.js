@@ -143,7 +143,7 @@ server.post('/whatsapp/send-message', async (req, res) => {
 
 server.post('/whatsapp/send-media', async (req, res) => {
   try {
-    const { number, caption, url } = req.body;
+    const { number,url } = req.body;
     const noHP = phoneNumberFormatter(number);
     const isRegisteredNumber = await checkRegisteredNumber(noHP);
 
@@ -156,7 +156,7 @@ server.post('/whatsapp/send-media', async (req, res) => {
     }
 
     const media = await MessageMedia.fromUrl(url);
-    await client.sendMessage(noHP, media, { caption });
+    await client.sendMessage(noHP, media);
 
     res.status(200).json({
       data: null,
@@ -164,7 +164,6 @@ server.post('/whatsapp/send-media', async (req, res) => {
       message: "Media Berhasil Dikirim"
     });
   } catch (err) {
-    console.log("oke", err);
     res.status(500).json({
       data: null,
       code: 500,
