@@ -4,6 +4,7 @@ const server = express();
 const port = 5000;
 const bodyParser = require('body-parser');
 const cors = require('cors')
+const fetch = require('node-fetch');
 
 const phoneNumberFormatter = function (number) {
   let formatted = number.replace(/\D/g, '');
@@ -21,6 +22,13 @@ const checkRegisteredNumber = async (number) => {
   const isRegistered = await client.isRegisteredUser(number);
   return isRegistered;
 }
+
+const convertUrlToBase64 = async (url) => {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return base64;
+};
 
 server.use(bodyParser.json());
 server.use(express.urlencoded({
@@ -124,8 +132,7 @@ server.post('/whatsapp/send-message', async (req, res) => {
 
 server.post('/whatsapp/send-media', async (req, res) => {
   try {
-   
-    const { number, caption, base64 } = req.body;
+    const { number, caption, url } = req.body;
     const noHP = phoneNumberFormatter(number);
     const isRegisteredNumber = await checkRegisteredNumber(noHP);
 
@@ -137,7 +144,9 @@ server.post('/whatsapp/send-media', async (req, res) => {
       });
     }
 
-    const media = new MessageMedia('image/png', base64);
+    const base64Image = await convertUrlToBase64(url);
+    console.log("🚀 ~ server.post ~ base64Image:", base64Image)
+    const media = new MessageMedia('image/png', base64Image);
     await client.sendMessage(noHP, media, { caption });
 
     res.status(200).json({
@@ -146,7 +155,7 @@ server.post('/whatsapp/send-media', async (req, res) => {
       message: "Media Berhasil Dikirim"
     });
   } catch (err) {
-    console.log("oke" , err)
+    console.log("oke", err);
     res.status(500).json({
       data: null,
       code: 500,
