@@ -93,7 +93,6 @@ server.get('/whatsapp', (req, res) => {
 })
 
 
-
 server.get('/whatsapp/check-number/:number', async (req, res) => {
   const number = phoneNumberFormatter(req.params.number);
   const isRegisteredNumber = await checkRegisteredNumber(number);
@@ -156,9 +155,7 @@ server.post('/whatsapp/send-media', async (req, res) => {
       });
     }
 
-    const base64Image = await convertUrlToBase64(url);
-    console.log("🚀 ~ server.post ~ base64Image:", base64Image)
-    const media = new MessageMedia('image/png', base64Image);
+    const media = await MessageMedia.fromUrl(url);
     await client.sendMessage(noHP, media, { caption });
 
     res.status(200).json({
