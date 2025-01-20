@@ -27,7 +27,7 @@ server.use(express.urlencoded({
   extended: true
 }));
 
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
 client = new Client({
   authStrategy: new LocalAuth(),
@@ -114,7 +114,6 @@ server.post('/whatsapp/send-message', async (req, res) => {
       })
     })
     .catch((err) => {
-      console.log("🚀 ~ file: server.js:121 ~ server.post ~ err:", err)
       res.status(500).json({
         data: null,
         code: 500,
@@ -123,6 +122,36 @@ server.post('/whatsapp/send-message', async (req, res) => {
     })
 })
 
+server.post('/whatsapp/send-media', async (req, res) => {
+  try {
+    const { number, caption, base64 } = req.body;
+    const noHP = phoneNumberFormatter(number);
+    const isRegisteredNumber = await checkRegisteredNumber(noHP);
+
+    if (!isRegisteredNumber) {
+      return res.status(422).json({
+        data: false,
+        message: 'Nomor Whatsapp tidak terdaftar',
+        code: 422
+      });
+    }
+
+    const media = new MessageMedia('image/png', base64);
+    await client.sendMessage(noHP, media, { caption });
+
+    res.status(200).json({
+      data: null,
+      code: 200,
+      message: "Media Berhasil Dikirim"
+    });
+  } catch (err) {
+    res.status(500).json({
+      data: null,
+      code: 500,
+      message: "Media Gagal Dikirim"
+    });
+  }
+});
 
 
 server.listen(port, () => {
